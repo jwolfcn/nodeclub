@@ -1,0 +1,178 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+    <meta charset="utf-8"/>
+    <title>基于WEB的在线拓扑编辑器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+
+    <link href="css/bootstrap.css" type="text/css" rel="stylesheet" />
+    <link href="css/bootstrap-responsive.css" type="text/css" rel="stylesheet" />
+    <link id="theme" rel="stylesheet" type="text/css" href="themes/bootstrap/easyui.css">
+    <link rel="stylesheet" type="text/css" href="themes/icon.css">
+    <link id="flowPath" href="css/editor.css" type="text/css" rel="stylesheet" />
+    <link href="css/jquery.alerts.css" type="text/css" rel="stylesheet" />
+    <link href="css/header.css" type="text/css" rel="stylesheet" />
+    <link href="css/main_topology.css" type="text/css" rel="stylesheet" />
+	  <link href="css/jquery.ipinput.css" type="text/css" rel="stylesheet"/>
+
+    <STYLE>
+        .tp_table td{
+            padding:10px 0;
+        }
+        v\:*{behavior:url(#default#VML);}
+    </STYLE>
+</head>
+
+<body style="background-color: transparent;">
+    <canvas id="drawCanvas"  style="background: rgba(255,255,155,0);"  class="mapContext" width="1920" height="1680">
+        您的浏览器不支持HTML5!
+        </canvas>
+<div id="contextBody" region="north" split="false" border="false" class="titleTool" style="margin:auto;width:1920px;height:1680px;background-color: transparent;">
+
+</div>
+
+</body>
+
+<script src="js/util.js" type="text/javascript" ></script>
+<script src="js/jquery-1.7.1.min.js" type="text/javascript"></script>
+<script src="js/jquery.alerts.js" type="text/javascript"></script>
+<script src="js/jquery.easyui.min.js" type="text/javascript"></script>
+<script src="js/jtopo-0.4.8-dev.js" type="text/javascript" ></script>
+<script src="js/editor.js" type="text/javascript" ></script>
+<script src="js/network.js" type="text/javascript" ></script>
+<script src="js/jquery.ipinput.js" type="text/javascript"></script>
+<script src="js/topologyProperties.js" type="text/javascript"></script>
+<script type="text/javascript">
+    function navLevel(ele){
+        var selectEle = $("#selectLevel");
+        var self = $(ele);
+        var value = selectEle.find("option:selected").eq(0).val();
+        var options = selectEle.find("option");
+        var maxLevel = options.size() -1;
+        if(self.attr("id") == "pre"){
+            //到第一层
+            if(value == 1)
+                return;
+            else
+                editor.replaceStage(editor.templateId,editor.topologyId,false,editor.stage.parentLevel);
+            for(var o = 0 ; o< options.length ; o++){
+                if(editor.stage.parentLevel == options[o].value){
+                    $(options[o]).attr("selected","selected");
+                }
+            }
+        }
+        if(self.attr("id") == "next"){
+            //到第一层
+            if(value == maxLevel)
+                return;
+            else
+                editor.replaceStage(editor.templateId,editor.topologyId,false,parseInt(value) + 1);
+            for(var o = 0 ; o< options.length ; o++){
+                if(parseInt(value) + 1 == options[o].value){
+                    $(options[o]).attr("selected","selected");
+                }
+            }
+        }
+    }
+    //节点名字加载器
+    var nodeNamesloader = function(param,success,error){
+        //获取输入的值
+        var q = param.q || "";
+        //此处q的length代表输入多少个字符后开始查询
+        if(q.length <= 0) return false;
+        var nodes =  editor.stage.find('node[elementType="node"]');
+        var items = $.map(nodes, function (item, index) {
+            if(item.text && item.text.indexOf(q) != -1){
+                return {
+                    "nodeId": index,
+                    "nodeName": item.text
+                };
+            }
+        });
+        success(items);
+    }
+    jQuery(document).ready(function () {
+        //jAlert($.i18n.prop('editor.ui.selectLanguage'));
+        $(document).on("contextmenu",function(e){
+            return false;
+        });
+
+        $("#simpleLine").click(function(){
+            $(this).css("background-color","darkgray");
+            $("#foldLineH").css("background-color","white");
+            $("#foldLineV").css("background-color","white");
+            $("#flexLineH").css("background-color","white");
+            $("#flexLineV").css("background-color","white");
+        });
+        $("#foldLineH").click(function(){
+            $(this).css("background-color","darkgray");
+            $("#simpleLine").css("background-color","white");
+            $("#foldLineV").css("background-color","white");
+            $("#flexLineH").css("background-color","white");
+            $("#flexLineV").css("background-color","white");
+        });
+        $("#foldLineV").click(function(){
+            $(this).css("background-color","darkgray");
+            $("#simpleLine").css("background-color","white");
+            $("#foldLineH").css("background-color","white");
+            $("#flexLineH").css("background-color","white");
+            $("#flexLineV").css("background-color","white");
+        });
+        $("#flexLineH").click(function(){
+            $(this).css("background-color","darkgray");
+            $("#simpleLine").css("background-color","white");
+            $("#foldLineH").css("background-color","white");
+            $("#foldLineV").css("background-color","white");
+            $("#flexLineV").css("background-color","white");
+        });
+        $("#flexLineV").click(function(){
+            $(this).css("background-color","darkgray");
+            $("#simpleLine").css("background-color","white");
+            $("#foldLineH").css("background-color","white");
+            $("#foldLineV").css("background-color","white");
+            $("#flexLineH").css("background-color","white");
+        });
+
+        $('#mainControl').accordion({
+            onSelect: function (title) {
+                //editor.selectPanel(title,editor.currentNode.templateId,editor.currDeviceId,editor.currDataType);
+            }
+        });
+
+        var modes = jQuery("[divType='mode']");
+        var modeLength = modes.length;
+
+        for (var i = 0; i < modeLength; i++) {
+            modes[i].gtype=modes[i].getAttribute("gtype");
+            modes[i].datatype=modes[i].getAttribute("datatype");
+            var text = $(modes[i]).find("span").eq(0).text();
+            editor.drag(modes[i],document.getElementById('drawCanvas'),text);
+        }
+        //加载网络拓扑图
+        editor.loadTopology("images/backimg.png",'${templateId}','${topologyId}',"");
+        $("#selectLevel").parent().css({ "height": "22px","line-height":"22px"});
+        //拓扑层跳转
+        $("#selectLevel").on("change",function () {
+            if(this.value == -1) return false;
+            editor.replaceStage(editor.templateId,editor.topologyId,false,this.value);
+            $('#queryText').combobox("clear");
+            $('#queryText').combobox("reload");
+        });
+        //搜索设备节点候选框
+        $('#queryText').combobox({
+            loader: nodeNamesloader,
+            mode: 'remote',
+            valueField:'nodeId',
+            textField:'nodeName',
+            onSelect : function(record){
+                //查该选中的设备节点
+                editor.utils.findNodeAndFlash(record.nodeName);
+            }
+        });
+        $("input[class='combo-text validatebox-text']").attr("placeholder","输入节点名称搜素...");
+    });
+
+</script>
+</html>

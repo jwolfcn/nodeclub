@@ -16,6 +16,8 @@ var message = require('./controllers/message');
 var topic = require('./controllers/topic');
 var reply = require('./controllers/reply');
 var rss = require('./controllers/rss');
+// 中信安
+var zxa = require('./controllers/zxa');
 var staticController = require('./controllers/static');
 var auth = require('./middlewares/auth');
 var limit = require('./middlewares/limit');
@@ -120,6 +122,15 @@ router.post('/auth/github/create', limit.peripperday('create_user_per_ip', confi
 
 router.get('/search', search.index);
 
+// 中信安
+router.post('/zxa/topologyManage/saveTopologyJSON', zxa.saveTopo)
+router.get('/zxa/topologyManage/getTopologyJSON', zxa.getTopo)
+router.post('/zxa/topologyManage/getTopologyJSON', zxa.getTopo)
+router.post('/zxa/topologyManage/getDevices', zxa.getDevices)
+router.post('/zxa/topologyManage/bindDevice', zxa.bindDevice)
+router.post('/zxa/topologyManage/getDeviceInfoByKey',zxa.getDeviceIdByKeyMiddleWare, zxa.getDeviceInfoByDevcieId)
+router.post('/zxa/topologyManage/getDeviceIdByKey', zxa.getDeviceIdByKey)
+router.post('/zxa/topologyManage/getHomePageInfo', zxa.getHomePageInfo)
 if (!config.debug) { // 这个兼容破坏了不少测试
 	router.get('/:name', function (req, res) {
 	  res.redirect('/user/' + req.params.name)
